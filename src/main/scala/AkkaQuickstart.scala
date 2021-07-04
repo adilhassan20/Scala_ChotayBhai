@@ -15,13 +15,33 @@ import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import java.io.FileNotFoundException
 import java.io.IOException
 
+//JDBC Driver Configuration
+import java.sql.{Connection,DriverManager}
+
 final case class Customer (
-  id: Long, 
+  id: Long,  
   name: String,
   location: String
   )
 
-
+// def ExecuteQuert(query: String)  = {
+//            val url = "jdbc:mysql://localhost:3306/chotaybikes"
+//             val driver = "com.mysql.jdbc.Driver"
+//             val username = "root"
+//             val password = "admin"
+//             var connection:Connection = _
+//             try {
+//                 Class.forName(driver)
+//                 connection = DriverManager.getConnection(url, username, password)
+//                 val statement = connection.createStatement
+//                 val rs = statement.executeQuery("SELECT host, user FROM user")
+//                 return rs
+//             }
+//             catch {
+//                 case e: Exception => e.printStackTrace
+//             }
+//             connection.close
+// }
 object Main extends App{
 
   implicit val actorSystem = ActorSystem(Behaviors.empty, "akka-http")
@@ -29,7 +49,35 @@ object Main extends App{
 
   val getCustomer = get {
       concat(
-        path("") {
+        path("getallcustomers") {
+           val url = "jdbc:mysql://localhost:3306/chotybhai_customers"
+            val driver = "com.mysql.jdbc.Driver"
+            val username = "root"
+            val password = "admin"
+             try {
+                 
+           
+                Class.forName(driver)
+                var connection = DriverManager.getConnection(url, username, password)
+                val statement = connection.createStatement
+                val rs = statement.executeQuery("SELECT * FROM chotybhai_customers.customers;")
+                while (rs.next) {
+                    val id = rs.getString("id")
+                    val name = rs.getString("name")
+                    val location = rs.getString("location")
+                    println("name = %s, location = %s".format(name,location))
+                    complete(Customer(id.toLong, name,location))
+                }
+                 connection.close
+            } catch {
+                case e: Exception => e.printStackTrace
+            }
+            finally{
+                
+            }
+           
+
+
           complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart from scala akka http server!"))
         },
         path("customer" / LongNumber) {
