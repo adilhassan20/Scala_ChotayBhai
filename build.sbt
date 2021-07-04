@@ -16,7 +16,6 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" % "akka-http-spray-json_2.13" % "10.2.4",
   "ch.megard" % "akka-http-cors_2.13" % "1.1.1",
   "mysql" % "mysql-connector-java" % mySqlVersion,
- 
   "com.typesafe.akka" %% "akka-actor-testkit-typed" % akkaVersion % Test,
   "org.scalatest" %% "scalatest" % "3.1.0" % Test
 )

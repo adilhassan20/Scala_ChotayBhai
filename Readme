@@ -3,3 +3,23 @@ First of All :
 2) enter Command : sbt run
 3) all the libraries will be downloaded
 4) in src/main/resources/application.conf - Change allowed origin to your request source as mine is the postman google extension
+
+
+After This you need to setup mysql server 
+Change the variables in AkkaQuickStart.scala of Database
+
+
+Four Http Methods You can call
+
+get:
+
+
+
+post:
+
+
+
+delete:
+
+
+Update:

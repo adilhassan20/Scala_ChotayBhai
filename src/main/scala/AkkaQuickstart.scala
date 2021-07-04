@@ -14,6 +14,10 @@ import spray.json.DefaultJsonProtocol._
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
 import java.io.FileNotFoundException
 import java.io.IOException
+import scala.collection.mutable.ArrayBuffer
+
+import scala.collection.mutable.Map
+//import com.lambdaworks.jacks._
 
 //JDBC Driver Configuration
 import java.sql.{Connection,DriverManager}
@@ -46,14 +50,18 @@ object Main extends App{
 
   implicit val actorSystem = ActorSystem(Behaviors.empty, "akka-http")
   implicit val userMarshaller: spray.json.RootJsonFormat[Customer] = jsonFormat3(Customer.apply)
+   val durl = "jdbc:mysql://localhost:3306/chotybhai_customers"
+   val ddriver = "com.mysql.jdbc.Driver"
+   val dusername = "root"
+   val dpassword = "admin"
 
   val getCustomer = get {
       concat(
         path("getallcustomers") {
-           val url = "jdbc:mysql://localhost:3306/chotybhai_customers"
-            val driver = "com.mysql.jdbc.Driver"
-            val username = "root"
-            val password = "admin"
+           val url = durl
+            val driver = ddriver
+            val username = dusername
+            val password = dpassword
              try {
                  
            
@@ -61,14 +69,21 @@ object Main extends App{
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
                 val rs = statement.executeQuery("SELECT * FROM chotybhai_customers.customers;")
+               
                 while (rs.next) {
-                    val id = rs.getString("id")
-                    val name = rs.getString("name")
-                    val location = rs.getString("location")
-                    println("name = %s, location = %s".format(name,location))
-                    complete(Customer(id.toLong, name,location))
-                }
-                 connection.close
+                  val name = rs.getString("name")
+                  val location = rs.getString("location")
+                  val id = rs.getString("id")
+                  println("name = %s, location = %s".format(name,location))
+
+                  //here we have to better parse the results in json inorder for it to be REST API
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, id))
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, name))
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, location))
+              }
+  
+            connection.close
+                 
             } catch {
                 case e: Exception => e.printStackTrace
             }
@@ -78,15 +93,45 @@ object Main extends App{
            
 
 
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart from scala akka http server!"))
+          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart from Users are fetched but shown on console JSON conversion not Found!"))
         },
         path("customer" / LongNumber) {
           customerid => {
-            println("get cystomer by id")
-              customerid match {
-                case 1 => complete(Customer(customerid, "syedAdil","Islamabad"))
-                case _ => complete(StatusCodes.NotFound)
+             val url = durl
+            val driver = ddriver
+            val username = dusername
+            val password = dpassword
+             try {
+                 
+           
+                Class.forName(driver)
+                var connection = DriverManager.getConnection(url, username, password)
+                val statement = connection.createStatement
+                val rs = statement.executeQuery("SELECT * FROM chotybhai_customers.customers where id == " +customerid.toString+ ";")
+               
+                while (rs.next) {
+                  val name = rs.getString("name")
+                  val location = rs.getString("location")
+                  val id = rs.getString("id")
+                  println("id= %s,name = %s, location = %s".format(id,name,location))
+                  //here we have to better parse the results in json inorder for it to be REST API
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, id))
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, name))
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, location))
               }
+              connection.close()
+                 
+            } catch {
+                case e: Exception => e.printStackTrace
+            }
+            finally{
+                
+            }
+           
+
+
+             complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart some from Users are fetched but shown on console JSON conversion not Found!"))
+
           }
         }
       )
@@ -100,8 +145,32 @@ object Main extends App{
       entity(as[Customer]) {
         customer => {
           println("save user")
-           complete(Customer(customer.id, customer.name,customer.location))
-    //     complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world from scala akka http server!"))
+
+            val url = durl
+            val driver = ddriver
+            val username = dusername
+            val password = dpassword
+             try {
+                 
+           
+                Class.forName(driver)
+                var connection = DriverManager.getConnection(url, username, password)
+                val statement = connection.createStatement
+                val createtable = statement.executeQuery("CREATE TABLE IF NOT EXISTS `chotybhai_customers`.`customers` ( `id` BIGINT(20) NOT NULL AUTO_INCREMENT, `username` VARCHAR(200) NOT NULL,  `password` VARCHAR(300) NOT NULL, PRIMARY KEY (`id`) );");
+                val rs = statement.executeQuery("insert into chotybhai_customers.customers(name,location) values("+customer.name+","+customer.location+");")
+               
+                connection.close()
+                  complete(Customer(customer.id, customer.name,customer.location))
+            } catch {
+                case e: Exception => e.printStackTrace
+            }
+            finally{
+                
+            }
+
+
+          
+        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Created"))
        }
       }
      
@@ -116,7 +185,29 @@ object Main extends App{
       entity (as[Customer]) {
         customer => {
           println("update Customer")
-          complete(Customer(customer.id, customer.name,customer.location))
+             val url = durl
+            val driver = ddriver
+            val username = dusername
+            val password = dpassword
+             try {
+                 
+           
+                Class.forName(driver)
+                var connection = DriverManager.getConnection(url, username, password)
+                val statement = connection.createStatement
+                val rs = statement.executeQuery("UPDATE chotybhai_customers.customers SET name="+customer.name+", location="+customer.location+" WHERE id='"+customer.id+"'; ")
+               
+                connection.close()
+                  complete(Customer(customer.id, customer.name,customer.location))
+            } catch {
+                case e: Exception => e.printStackTrace
+            }
+            finally{
+                
+            }
+
+            
+          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Updated"))
         }
       }
 
@@ -130,7 +221,29 @@ object Main extends App{
     path ("deletecustomer" / LongNumber) {
       customer => {
         println(s"Customer ${customer}")
-        complete(Customer(customer, "syed","Islamabad"))
+          val url = durl
+            val driver = ddriver
+            val username = dusername
+            val password = dpassword
+             try {
+                 
+           
+                Class.forName(driver)
+                var connection = DriverManager.getConnection(url, username, password)
+                val statement = connection.createStatement
+                val rs = statement.executeQuery("DELETE FROM chotybhai_customers.customers WHERE id="+customer.toString()+";")
+               
+                connection.close()
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Deleted"))
+            } catch {
+                case e: Exception => e.printStackTrace
+            }
+            finally{
+                
+            }
+
+
+        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Deleted"))
       }
     }
   }
