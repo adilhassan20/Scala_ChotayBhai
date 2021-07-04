@@ -27,18 +27,10 @@ object Main extends App{
   implicit val actorSystem = ActorSystem(Behaviors.empty, "akka-http")
   implicit val userMarshaller: spray.json.RootJsonFormat[Customer] = jsonFormat3(Customer.apply)
 
-  val getUser = get {
+  val getCustomer = get {
       concat(
-         path("customer") {
-      // entity(as[Customer]) {
-      //   customer => {
-          println("save user")
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world from scala akka http server!"))
-       // }
-      //}
-    },
-        path("hello") {
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world from scala akka http server!"))
+        path("/") {
+          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart from scala akka http server!"))
         },
         path("customer" / LongNumber) {
           customerid => {
@@ -52,7 +44,7 @@ object Main extends App{
       )
   }
   
-  val createUser = post {
+  val createCustomer = post {
    // println("save user1")
     path("addcustomer") {
       
@@ -60,7 +52,7 @@ object Main extends App{
       entity(as[Customer]) {
         customer => {
           println("save user")
-           complete(Customer(customer.id, customer.name,"Islamabad"))
+           complete(Customer(customer.id, customer.name,customer.location))
     //     complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world from scala akka http server!"))
        }
       }
@@ -70,13 +62,13 @@ object Main extends App{
     }
   }
 
-  val updateUser = put {
-    path("customer") {
+  val updateCustomer = put {
+    path("updatecustomer") {
 
       entity (as[Customer]) {
         customer => {
           println("update Customer")
-          complete(Customer(customer.id, customer.name,"Islamabad"))
+          complete(Customer(customer.id, customer.name,customer.location))
         }
       }
 
@@ -86,8 +78,8 @@ object Main extends App{
     }
   }
 
-  val deleteUser = delete {
-    path ("customer" / LongNumber) {
+  val deleteCustomer = delete {
+    path ("deletecustomer" / LongNumber) {
       customer => {
         println(s"Customer ${customer}")
         complete(Customer(customer, "syed","Islamabad"))
@@ -96,7 +88,7 @@ object Main extends App{
   }
 
   val route = cors() {
-    concat(getUser, createUser, updateUser, deleteUser)
+    concat(getCustomer, createCustomer, updateCustomer, deleteCustomer)
   }
 
   val bindFuture = Http().newServerAt("127.0.0.1", 8080).bind(route)
