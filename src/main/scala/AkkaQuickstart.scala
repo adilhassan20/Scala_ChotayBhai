@@ -12,8 +12,14 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import spray.json.DefaultJsonProtocol._
 // cors
 import ch.megard.akka.http.cors.scaladsl.CorsDirectives._
+import java.io.FileNotFoundException
+import java.io.IOException
 
-final case class Customer (id: Long, name: String, location: String)
+final case class Customer (
+  id: Long, 
+  name: String,
+  location: String
+  )
 
 
 object Main extends App{
@@ -23,6 +29,14 @@ object Main extends App{
 
   val getUser = get {
       concat(
+         path("customer") {
+      // entity(as[Customer]) {
+      //   customer => {
+          println("save user")
+          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world from scala akka http server!"))
+       // }
+      //}
+    },
         path("hello") {
           complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world from scala akka http server!"))
         },
@@ -39,24 +53,36 @@ object Main extends App{
   }
   
   val createUser = post {
-    path("user") {
+   // println("save user1")
+    path("addcustomer") {
+      
+     println("save user")
       entity(as[Customer]) {
         customer => {
           println("save user")
-          complete(Customer(customer.id, "syedNaqvi","Islamabad"))
-        }
+           complete(Customer(customer.id, customer.name,"Islamabad"))
+    //     complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world from scala akka http server!"))
+       }
       }
+     
+  
+      
     }
   }
 
   val updateUser = put {
     path("customer") {
+
       entity (as[Customer]) {
         customer => {
           println("update Customer")
-          complete(Customer(customer.id, "syed","Islamabad"))
+          complete(Customer(customer.id, customer.name,"Islamabad"))
         }
       }
+
+
+         // complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hello world put!"))
+
     }
   }
 
