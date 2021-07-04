@@ -29,7 +29,7 @@ object Main extends App{
 
   val getCustomer = get {
       concat(
-        path("/") {
+        path("") {
           complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart from scala akka http server!"))
         },
         path("customer" / LongNumber) {
