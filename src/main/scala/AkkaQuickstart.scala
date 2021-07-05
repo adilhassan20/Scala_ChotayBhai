@@ -74,27 +74,30 @@ object Main extends App{
                   val name = rs.getString("name")
                   val location = rs.getString("location")
                   val id = rs.getString("id")
-                  println("name = %s, location = %s".format(name,location))
-
+                  println("id = %s, name = %s, location = %s".format(id,name,location))
+                  complete(StatusCodes.OK) //Returning status codes
                   //here we have to better parse the results in json inorder for it to be REST API
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, id))
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, name))
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, location))
+                 
               }
-  
-            connection.close
+               connection.close()
+             complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart from Users are fetched but shown on console JSON conversion of Result Set not Set!"))
+
+           
                  
             } catch {
-                case e: Exception => e.printStackTrace
-            }
-            finally{
-                
-            }
-           
+                case e: Exception => {
+                  e.printStackTrace
+                  complete(StatusCodes.NotFound)
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi,There was some error"))
 
-
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart from Users are fetched but shown on console JSON conversion not Found!"))
-        },
+                  
+                }
+            }
+             
+          },
         path("customer" / LongNumber) {
           customerid => {
              val url = durl
@@ -116,25 +119,30 @@ object Main extends App{
                   val location = rs.getString("location")
                   val id = rs.getString("id")
                   println("id= %s,name = %s, location = %s".format(id,name,location))
+                  complete(StatusCodes.OK)
                   //here we have to better parse the results in json inorder for it to be REST API
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, id))
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, name))
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, location))
               }
               connection.close()
+              complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart some from Users are fetched but shown on console JSON conversion of ResultSet not Set!"))
+
+
+              
                  
             } catch {
-                case e: Exception => e.printStackTrace
+                case e: Exception =>{
+                  e.printStackTrace
+                  complete(StatusCodes.NotFound)
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi,There was some error"))
+                  
+                } 
             }
-            finally{
-                
-            }
-           
+          
 
 
-             complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Hi, Upstart some from Users are fetched but shown on console JSON conversion not Found!"))
-
-          }
+           }
         }
       )
   }
@@ -144,7 +152,7 @@ object Main extends App{
     path("addcustomer") {
       
      println("save user")
-      entity(as[Customer]) {
+      entity(as[Customer]) { 
         customer => {
           println("save user")
 
@@ -159,21 +167,29 @@ object Main extends App{
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
                 val statement1 = connection.createStatement
-                val createtable = statement.executeQuery("CREATE TABLE IF NOT EXISTS `chotybhai_customers`.`customers` ( `id` BIGINT(20) NOT NULL AUTO_INCREMENT, `username` VARCHAR(200) NOT NULL,  `password` VARCHAR(300) NOT NULL, PRIMARY KEY (`id`) );");
-                val rs = statement1.executeQuery("insert into chotybhai_customers.customers(name,location) values(\""+customer.name+"\",\""+customer.location+"\");")
-               
+                val createtable = statement.executeUpdate("CREATE TABLE IF NOT EXISTS `chotybhai_customers`.`customers` ( `id` BIGINT(20) NOT NULL AUTO_INCREMENT, `username` VARCHAR(200) NOT NULL,  `password` VARCHAR(300) NOT NULL, PRIMARY KEY (`id`) );");
+                println("Table Created")
+                val rs = statement1.executeUpdate("insert into chotybhai_customers.customers(name,location) values(\""+customer.name+"\",\""+customer.location+"\");")
                 connection.close()
-                  complete(Customer(customer.id, customer.name,customer.location))
-            } catch {
-                case e: Exception => e.printStackTrace
-            }
-            finally{
+                complete(StatusCodes.OK)
+                complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Created"))
                 
+               
+            } catch {
+                case e: Exception => {
+                  e.printStackTrace
+                  complete(StatusCodes.NotFound)
+                  complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Not Created"))
+                  
+
+
+                }
             }
+            
 
 
           
-        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Created"))
+        
        }
       }
      
@@ -198,19 +214,25 @@ object Main extends App{
                 Class.forName(driver)
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
-                val rs = statement.executeQuery("UPDATE chotybhai_customers.customers SET name=\""+customer.name+"\", location=\""+customer.location+"\" WHERE id='"+customer.id+"'; ")
-               
-                connection.close()
-                  complete(Customer(customer.id, customer.name,customer.location))
+                val rs = statement.executeUpdate("UPDATE chotybhai_customers.customers SET name=\""+customer.name+"\", location=\""+customer.location+"\" WHERE id='"+customer.id+"'; ")
+               connection.close()
+                complete(StatusCodes.OK) //Returning status codes
+                
+              complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Updated"))
             } catch {
-                case e: Exception => e.printStackTrace
-            }
-            finally{
+               
+                case e: Exception => {
+                   e.printStackTrace
+                   complete(StatusCodes.NotFound)
+                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Not Updated"))
+                 
+                }
                 
             }
+            
 
             
-          complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Updated"))
+          
         }
       }
 
@@ -223,7 +245,7 @@ object Main extends App{
   val deleteCustomer = delete {
     path ("deletecustomer" / LongNumber) {
       customer => {
-        println(s"Customer ${customer}")
+       println("Deleting Customer")
           val url = durl
             val driver = ddriver
             val username = dusername
@@ -234,19 +256,22 @@ object Main extends App{
                 Class.forName(driver)
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
-                val rs = statement.executeQuery("DELETE FROM chotybhai_customers.customers WHERE id='"+customer.toString()+"';")
-               
-                connection.close()
+                val rs = statement.executeUpdate("DELETE FROM chotybhai_customers.customers WHERE id='"+customer.toString()+"';")
+               connection.close()
+                complete(StatusCodes.OK) //Returning status codes
+                
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Deleted"))
             } catch {
-                case e: Exception => e.printStackTrace
+                case e: Exception => {
+                   e.printStackTrace
+                  complete(StatusCodes.NotFound)
+                 
+                }
             }
-            finally{
-                
-            }
+           
 
 
-        complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Deleted"))
+        
       }
     }
   }
