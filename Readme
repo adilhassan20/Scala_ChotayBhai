@@ -1,25 +1,74 @@
+Things to be done in order for Successful Execution:
+
 First of All :
-1) in the folder new open .Code
+1) In the folder new open .Code
 2) enter Command : sbt run
-3) all the libraries will be downloaded
-4) in src/main/resources/application.conf - Change allowed origin to your request source as mine is the postman google extension
+3) All the libraries will be downloaded
+4) In src/main/resources/application.conf - Change allowed origin to your request source as mine is the postman google extension
 
 
+Install Mysql Server:
+Run its service from MS-Window Services
 After This you need to setup mysql server 
 Change the variables in AkkaQuickStart.scala of Database
+Including, username, password, and path
 
 
+Please Start from inserting customers into the table using create cutomer endpoint below
+
+
+Interaction with the API
 Four Http Methods You can call
+using postman after successfully executing the command: sbt run
 
+All the available Endpoints:
 get:
 
+getting all customers:
+http://localhost:8080/getallcustomers
 
+getting on ID based:
+http://localhost:8080/customer/1
+here 1 is the ID
 
 post:
+
+
+Creating Customer:
+
+If the table doesnot exist it will first create the table:
+
+http://localhost:8080/addcustomer
+
+body:
+{
+"id":5, // here ID will not matter because in the code it is set to auto increment and in mysql table also so its a dumy value only inroder to recieve other properties also
+"name":"Aadil",
+"location":"Lahore"
+}
 
 
 
 delete:
 
+http://localhost:8080/deletecustomer/5
+// here customer with id 5 will be deleted from DB
 
-Update:
+
+Put(Update):
+http://localhost:8080/updatecustomer
+
+body = {
+	"id":1,
+	"name" :"ahmed",
+	"location": "Gujrat"
+}
+
+//here existing person with id 1 will be changed to the given name and location in the DB can be chewcked buy calling the "get-allcustomers" endpoint again
+
+
+
+Note:
+I have Returned all Status http codes as a part of RESTApi, 
+Unfortunatley I was not able to convert and display the resultset of Mysql Query to json and returned to PostMan 
+The Result can be seen on console as I have printed them in scala using println
