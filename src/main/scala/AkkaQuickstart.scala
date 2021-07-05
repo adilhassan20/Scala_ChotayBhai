@@ -103,12 +103,14 @@ object Main extends App{
             val password = dpassword
              try {
                  
-           
+                println("hello")
                 Class.forName(driver)
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
-                val rs = statement.executeQuery("SELECT * FROM chotybhai_customers.customers where id == " +customerid.toString+ ";")
-               
+                
+                var q = "SELECT * FROM chotybhai_customers.customers where id = '" +customerid.toString()+ "';"
+                println(q)
+                 val rs = statement.executeQuery(q)
                 while (rs.next) {
                   val name = rs.getString("name")
                   val location = rs.getString("location")
@@ -156,8 +158,9 @@ object Main extends App{
                 Class.forName(driver)
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
+                val statement1 = connection.createStatement
                 val createtable = statement.executeQuery("CREATE TABLE IF NOT EXISTS `chotybhai_customers`.`customers` ( `id` BIGINT(20) NOT NULL AUTO_INCREMENT, `username` VARCHAR(200) NOT NULL,  `password` VARCHAR(300) NOT NULL, PRIMARY KEY (`id`) );");
-                val rs = statement.executeQuery("insert into chotybhai_customers.customers(name,location) values("+customer.name+","+customer.location+");")
+                val rs = statement1.executeQuery("insert into chotybhai_customers.customers(name,location) values(\""+customer.name+"\",\""+customer.location+"\");")
                
                 connection.close()
                   complete(Customer(customer.id, customer.name,customer.location))
@@ -195,7 +198,7 @@ object Main extends App{
                 Class.forName(driver)
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
-                val rs = statement.executeQuery("UPDATE chotybhai_customers.customers SET name="+customer.name+", location="+customer.location+" WHERE id='"+customer.id+"'; ")
+                val rs = statement.executeQuery("UPDATE chotybhai_customers.customers SET name=\""+customer.name+"\", location=\""+customer.location+"\" WHERE id='"+customer.id+"'; ")
                
                 connection.close()
                   complete(Customer(customer.id, customer.name,customer.location))
@@ -231,7 +234,7 @@ object Main extends App{
                 Class.forName(driver)
                 var connection = DriverManager.getConnection(url, username, password)
                 val statement = connection.createStatement
-                val rs = statement.executeQuery("DELETE FROM chotybhai_customers.customers WHERE id="+customer.toString()+";")
+                val rs = statement.executeQuery("DELETE FROM chotybhai_customers.customers WHERE id='"+customer.toString()+"';")
                
                 connection.close()
                   complete(HttpEntity(ContentTypes.`text/plain(UTF-8)`, "Customer Deleted"))
